@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Algo Matrix | Advanced Trading Tools</title>
+    <style>
+        /* --- CSS VARIABLES (Colors) --- */
+        :root {
+            --primary-green: #00ff41; /* The Matrix Green */
+            --dark-bg: #030303;       /* Deep Black */
+            --glass-bg: rgba(0, 0, 0, 0.4); /* 40% transparent black */
+            --glow: 0 0 10px var(--primary-green);
+        }
+
+        /* --- BASIC RESET & FONTS --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Courier New', Courier, monospace; /* Terminal Font */
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: var(--primary-green);
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        /* --- MATRIX RAIN CANVAS --- */
+        #matrix-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* Puts the rain behind everything */
+            filter: blur(1.6px); /* Add blur to the background animation */
+        }
+
+        /* --- NEW: 3-COLUMN LAYOUT GRID --- */
+        .body-grid {
+            display: flex;
+            width: 100vw;
+            min-height: 100vh;
+            justify-content: space-between;
+        }
+
+        /* --- NEW: SHARED SIDEBAR STYLES --- */
+        .sidebar-panel {
+            width: 320px;
+            padding: 20px;
+            height: 100vh;
+            overflow-y: auto;
+            position: sticky;
+            top: 0;
+            flex-shrink: 0;
+            background: rgba(0, 0, 0, 0.2); /* Semi-transparent background to enable blur */
+            backdrop-filter: blur(2px); /* Add blur effect */
+        }
+
+        .sidebar-left {
+            border-right: 2px solid var(--primary-green);
+            box-shadow: var(--glow);
+        }
+        
+        .sidebar-right {
+            border-left: 2px solid var(--primary-green);
+            box-shadow: var(--glow);
+        }
+
+        .sidebar-panel h2 {
+            border-bottom: 1px solid var(--primary-green);
+            padding-bottom: 10px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            font-size: 1.2rem;
+        }
+        
+        .indicator-menu-item {
+            display: block;
+            background: var(--dark-bg);
+            border: 1px solid var(--primary-green);
+            padding: 15px;
+            margin-bottom: 15px;
+            text-decoration: none;
+            color: var(--primary-green);
+            transition: 0.3s;
+        }
+        
+        .indicator-menu-item:hover {
+            background: rgba(0, 255, 65, 0.15);
+            box-shadow: var(--glow);
+            transform: translateY(-3px);
+        }
+
+        .indicator-menu-item h3 {
+            font-size: 1rem;
+            margin-bottom: 5px;
+        }
+        
+        .indicator-menu-item p {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+        
+        .indicator-price {
+            font-weight: bold;
+            margin-top: 10px;
+            font-size: 1.1rem;
+        }
+        
+        /* --- NEW: RIGHT SIDEBAR CONTENT --- */
+        .about-text, .creator-details {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            line-height: 1.5;
+        }
+
+        .social-icons {
+            margin-top: 20px;
+            display: flex;
+            gap: 20px;
+        }
+
+        .social-icons a {
+            color: var(--primary-green);
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .social-icons a:hover {
+            transform: scale(1.1);
+            filter: drop-shadow(var(--glow));
+        }
+
+        .social-icons svg {
+            width: 30px;
+            height: 30px;
+        }
+
+
+        /* --- MAIN CONTENT AREA --- */
+        .main-content {
+            flex-grow: 1;
+            padding: 20px 40px;
+            max-width: 1000px;
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(2px);
+        }
+
+        /* --- HEADER --- */
+        header {
+            text-align: center;
+            margin-top: 40px;
+            margin-bottom: 40px;
+            text-shadow: var(--glow);
+        }
+
+        h1 {
+            font-size: 3rem;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            margin-bottom: 10px;
+        }
+
+        .tagline {
+            font-size: 1rem;
+            opacity: 0.8;
+        }
+
+        /* --- MAIN CARD STYLING --- */
+        .glass-panel {
+            background: var(--glass-bg);
+            border: 2px solid var(--primary-green);
+            border-radius: 15px;
+            box-shadow: var(--glow);
+            padding: 40px;
+            width: 100%;
+            margin-bottom: 30px;
+            backdrop-filter: blur(5px);
+        }
+        
+        .main-content h2 {
+            border-bottom: 1px solid var(--primary-green);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        /* --- ROADMAP SECTION --- */
+        .roadmap-item {
+            margin-bottom: 15px;
+            padding-left: 20px;
+            border-left: 2px solid var(--primary-green);
+        }
+
+        .roadmap-date {
+            font-weight: bold;
+            opacity: 0.7;
+        }
+
+        /* --- NEW ROADMAP STYLING --- */
+        .roadmap-container {
+            margin-top: 40px;
+        }
+        .roadmap-container h2 {
+            text-align: center;
+            text-shadow: var(--glow);
+            border-bottom: none; /* Override default h2 style */
+        }
+        .roadmap-block {
+            border: 1px solid var(--primary-green);
+            padding: 20px;
+            margin-bottom: 20px;
+            background: rgba(0, 255, 65, 0.05); /* Faint green glow */
+        }
+        .roadmap-block h3 {
+            color: var(--primary-green);
+            text-shadow: var(--glow);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            border-bottom: 1px dashed rgba(0, 255, 65, 0.3);
+            padding-bottom: 10px;
+        }
+        .roadmap-block p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            line-height: 1.5;
+        }
+
+        /* --- FOOTER --- */
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding-bottom: 20px;
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+        
+        /* --- RESPONSIVE --- */
+        @media (max-width: 1200px) {
+            .body-grid {
+                flex-direction: column;
+            }
+            .sidebar-panel {
+                width: 100%;
+                height: auto;
+                position: static;
+                border-right: none;
+                border-left: none;
+                border-bottom: 2px solid var(--primary-green);
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <canvas id="matrix-canvas"></canvas>
+
+    <div class="body-grid">
+        
+        <nav class="sidebar-panel sidebar-left">
+            <h2>Paid Access</h2>
+
+            <a href="https://gbstatxvanta.gumroad.com/l/StatXGBMirroring_v2" target="_blank" class="indicator-menu-item">
+                <h3>StatX GB Mirroring v2</h3>
+                <p>Fractal projection engine. Uses historical price symmetry and Goldbach levels to forecast future delivery vectors.</p>
+                <div class="indicator-price">$69.00</div>
+            </a>
+            
+            <h2>Free Access</h2>
+
+            <a href="https://www.tradingview.com/script/i0HbK2ge-Goldbach-Twin-Tower-Levels-by-StatXvanta/" target="_blank" class="indicator-menu-item">
+                <h3>Goldbach + Twin Tower</h3>
+                <p>Institutional Grid System. Combines Goldbach mathematical levels with Twin Tower reversal arrays for precision entries.</p>
+            </a>
+            
+            <a href="https://www.tradingview.com/script/O5Cwn6CY-Order-Flow-Gates-By-StatXvanta/" target="_blank" class="indicator-menu-item">
+                <h3>Order Flow Gates</h3>
+                <p>Liquidity Barrier Detection. Defines the active trading range and validates bullish/bearish Order Flow transitions.</p>
+            </a>
+            
+            <a href="https://www.tradingview.com/script/WK1sKFXa-Twin-Tower-GB-Ranges-by-StatXvanta/" target="_blank" class="indicator-menu-item">
+                <h3>Twin Tower GB Ranges</h3>
+                <p>Reversal Probability Logic. Identifies overextended price action (Premium/Discount) using Twin Tower variance.</p>
+            </a>
+            
+            <a href="https://www.tradingview.com/script/9g07kGpH-SWING-DYNAMICS-AR-Projection/" target="_blank" class="indicator-menu-item">
+                <h3>Swing Dynamics AR</h3>
+                <p>Volatility Structure. Automates Swing High/Low mapping with Average Range (AR) projections for target setting.</p>
+            </a>
+        </nav>
+
+        <main class="main-content">
+            
+            <header>
+                <h1>ALGO MATRIX</h1>
+                <p class="tagline">System Status: ONLINE // Monitoring Order Flow</p>
+            </header>
+    
+            <div class="glass-panel">
+                <h2>DECODE THE MARKET</h2>
+                <p style="line-height: 1.5; margin-bottom: 1em;">The market is not random; it is an algorithm. We provide the keys to decrypt it.</p>
+                <p style="line-height: 1.5; margin-bottom: 1em;">Algo Matrix bridges the gap between institutional precision and retail execution. Our tools do not predict; they reveal. From <strong>Goldbach Levels</strong> to <strong>Order Flow Gates</strong>, we visualize the hidden liquidity data that drives price action.</p>
+                <p style="line-height: 1.5;"><em>Stop guessing. Start executing.</em></p>
+            </div>
+
+            <div class="roadmap-container">
+                <h2>|| SYSTEM ROADMAP ||</h2>
+            
+                <div class="roadmap-block">
+                    <h3>Project: Neural Expansion</h3>
+                    <p>Integrating sentiment analysis from news feeds and social data streams. Core logic is being upgraded to process multi-timeframe confirmations, reducing noise and increasing signal accuracy.</p>
+                </div>
+            
+                <div class="roadmap-block">
+                    <h3>Module: Auto-Execution</h3>
+                    <p>A new module is in development to allow for fully automated trade execution. Connect your exchange via API key and let the indicators place buy/sell orders based on validated webhook signals.</p>
+                </div>
+            
+                <div class="roadmap-block">
+                    <h3>The Algorithm's Evolution</h3>
+                    <p>Our long-term vision is to fully bridge the gap between retail execution and institutional-grade algorithmic intelligence, giving our users access to the same level of data fidelity as the smart money.</p>
+                </div>
+            </div>
+    
+            <footer>
+                <p>&copy; 2025 Algo Matrix | Statxvanta Design</p>
+            </footer>
+
+        </main>
+
+        <nav class="sidebar-panel sidebar-right">
+            <h2>About</h2>
+            <p class="about-text">
+                Welcome to the Algo Matrix. We provide high-precision trading indicators based on institutional order flow and algorithmic logic.
+            </p>
+
+            <h2>Creators</h2>
+            <div class="creator-details">
+                <p>> StatXvanta</p>
+                <p>> NetNine</p>
+                <p>> Zixc3d</p>
+            </div>
+
+            <h2>Connect</h2>
+            <div class="social-icons">
+                <a href="https://discord.gg/gb_statxvanta" title="Discord: gb_statxvanta">
+                    <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.317 4.36981C18.7915 3.59691 17.1477 3.00651 15.4018 2.59981C15.2403 2.87191 15.0525 3.19321 14.891 3.48861C13.0209 3.05921 11.0822 3.05921 9.21207 3.48861C9.05062 3.19321 8.86282 2.87191 8.70142 2.59981C6.95551 3.00651 5.31171 3.59691 3.78621 4.36981C1.63851 7.46321 0.979013 10.7417 1.25911 14.045C2.88581 15.4237 4.74931 16.3533 6.72621 16.9745C6.99991 16.6391 7.24741 16.2874 7.46861 15.923C6.44451 15.6152 5.50291 15.1488 4.64921 14.5422C4.77861 14.4443 4.90481 14.3432 5.02781 14.2388C8.59271 16.0313 12.4379 16.0313 15.9996 14.2388C16.1226 14.3432 16.2488 14.4443 16.3782 14.5422C15.5245 15.1488 14.5829 15.6152 13.5588 15.923C13.78 16.2874 14.0275 16.6391 14.3012 16.9745C16.2781 16.3533 18.1416 15.4237 19.7683 14.045C20.1231 10.4901 19.3331 7.31991 17.3998 4.88511C17.3998 4.88511 18.8853 4.54661 20.317 4.36981ZM10.0312 11.2378C9.32191 11.2378 8.74231 10.6092 8.74231 9.84371C8.74231 9.07831 9.31971 8.44971 10.0312 8.44971C10.7426 8.44971 11.3222 9.07831 11.3222 9.84371C11.3222 10.6092 10.7426 11.2378 10.0312 11.2378ZM14.0844 11.2378C13.3751 11.2378 12.7955 10.6092 12.7955 9.84371C12.7955 9.07831 13.3729 8.44971 14.0844 8.44971C14.7958 8.44971 15.3754 9.07831 15.3754 9.84371C15.3754 10.6092 14.7958 11.2378 14.0844 11.2378Z"/></svg>
+                </a>
+                <a href="https://www.youtube.com/@StatXvanta" title="YouTube">
+                    <svg fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M8.051 1.999h.089c.822.003 4.987.033 6.11.335a2.01 2.01 0 0 1 1.415 1.42c.101.38.172.883.22 1.402l.01.104.022.26.008.104c.065.914.073 1.77.074 1.957v.075c-.001.194-.01 1.108-.082 2.06l-.008.105-.022.26-.01.104c-.048.519-.119 1.023-.22 1.402a2.01 2.01 0 0 1-1.415 1.42c-1.16.312-5.569.334-6.18.335h-.142c-.309 0-1.587-.006-2.927-.052l-.17-.006-.087-.004-.171-.007-.171-.007c-1.11-.049-2.167-.128-2.654-.26a2.01 2.01 0 0 1-1.415-1.419c-.111-.417-.185-.986-.235-1.558L.09 9.82l-.008-.104A31 31 0 0 1 0 7.68v-.123c.002-.215.01-.958.064-1.778l.007-.103.003-.052.008-.104.022-.26.01-.104c.048-.519.119 1.023.22-1.402a2.01 2.01 0 0 1 1.415-1.42c.487-.13 1.544-.21 2.654-.26l.17-.007.172-.006.086-.003.171-.007A99 99 0 0 1 7.858 2zM6.4 5.209v5.582l4.157-2.79c-.002-.002.002-.002 0 0z"/>
+                    </svg>
+                </a>
+                <a href="https://x.com/GB_statXvanta" title="X (Twitter)">
+                    <svg fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M12.6.75h2.454l-5.36 6.142L16 15.25h-4.937l-3.867-5.07-4.425 5.07H.316l5.733-6.57L0 .75h5.063l3.495 4.633L12.6.75Zm-.86 13.028h1.36L4.323 2.145H2.865l8.875 11.633Z"/>
+                    </svg>
+                </a>
+            </div>
+        </nav>
+
+    </div>
+
+    <script>
+        const canvas = document.getElementById('matrix-canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Set canvas to full screen
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        function setCanvasSize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            columns = canvas.width / fontSize;
+            for(let x = 0; x < columns; x++)
+                drops[x] = 1; 
+        }
+
+        // Characters to rain down (Matrix Katakana + Latin)
+        const katakana = 'アァカサタナハマヤャラワガザダバパイィキシチニヒミリヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレゲゼデベペオォコソトノホモロヲゴゾドボポヴッン';
+        const latin = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        const nums = '01';
+        const alphabet = katakana + latin + nums;
+
+        const fontSize = 16;
+        let columns = canvas.width / fontSize; // number of columns for the rain
+
+        // an array of drops - one per column
+        const drops = [];
+        // x below is the x coordinate
+        // 1 = y co-ordinate of the drop(same for every drop initially)
+        for(let x = 0; x < columns; x++)
+            drops[x] = 1; 
+
+        // Draw function
+        function draw() {
+            // Black BG for the canvas
+            // translucent BG to show trail
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#00ff41'; // The Matrix Green
+            ctx.font = fontSize + 'px monospace';
+
+            // looping over drops
+            for(let i = 0; i < drops.length; i++)
+            {
+                // a random character to print
+                const text = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
+                // x = i*fontSize, y = value of drops[i]*fontSize
+                ctx.fillText(text, i*fontSize, drops[i]*fontSize);
+
+                // sending the drop back to the top randomly after it has crossed the screen
+                // adding a randomness to the reset to make the drops scattered on the Y axis
+                if(drops[i]*fontSize > canvas.height && Math.random() > 0.975)
+                    drops[i] = 0;
+
+                // incrementing Y coordinate
+                drops[i]++;
+            }
+        }
+
+        const drawInterval = setInterval(draw, 33);
+
+        // Resize canvas if window resizes
+        window.addEventListener('resize', setCanvasSize);
+        setCanvasSize(); // Initial set
+    </script>
+</body>
+</html>
