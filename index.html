@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Algo Matrix | Advanced Trading Tools</title>
+    <link rel="icon" href="1764612153626.jpg" type="image/jpeg">
     <style>
         /* --- CSS VARIABLES (Colors) --- */
         :root {
@@ -177,10 +178,22 @@
 
         /* --- HEADER --- */
         header {
-            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            text-align: left; /* override the old center alignment */
             margin-top: 40px;
             margin-bottom: 40px;
             text-shadow: var(--glow);
+        }
+
+        .header-logo {
+            width: 80px;
+            height: 80px;
+            border: 2px solid var(--primary-green);
+            border-radius: 50%;
+            box-shadow: var(--glow);
         }
 
         h1 {
@@ -325,8 +338,11 @@
         <main class="main-content">
             
             <header>
-                <h1>ALGO MATRIX</h1>
-                <p class="tagline">System Status: ONLINE // Monitoring Order Flow</p>
+                <img src="1764612153626.jpg" alt="Algo Matrix Logo" class="header-logo">
+                <div>
+                    <h1>ALGO MATRIX</h1>
+                    <p class="tagline">System Status: ONLINE // Monitoring Order Flow</p>
+                </div>
             </header>
     
             <div class="glass-panel">
