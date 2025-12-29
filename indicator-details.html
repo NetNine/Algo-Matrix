@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StatX GB Mirroring v2.1 | Algo Matrix</title>
+    <style>
+        :root {
+            --primary-green: #00ff41;
+            --dark-bg: #0d0d0d;
+            --glass-bg: rgba(0, 20, 0, 0.4);
+            --glow: 0 0 10px var(--primary-green);
+            --terminal-font: 'Courier New', Courier, monospace;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: var(--terminal-font);
+        }
+        body {
+            background-color: var(--dark-bg);
+            color: var(--primary-green);
+            overflow: hidden; /* Prevent body from scrolling */
+        }
+        #matrix-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            filter: blur(1.6px);
+        }
+        /* Main Container holding all 3 sections */
+        .main-container {
+            display: grid;
+            grid-template-columns: 320px 1fr 350px; /* Fixed Left, Flexible Middle, Fixed Right */
+            height: 100vh; /* Forces the site to fit exactly one screen height */
+            overflow: hidden; /* Prevents the whole page from scrolling */
+            background-color: transparent;
+        }
+
+        /* Section 1: Left Panel (Fixed) */
+        .left-panel {
+            border-right: 1px solid var(--primary-green);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Section 2: Middle Panel (SCROLLABLE) */
+        .middle-panel {
+            overflow-y: auto; /* This allows ONLY this box to scroll */
+            padding: 40px;
+            scrollbar-width: none; /* Hide scrollbar for Firefox */
+        }
+        .middle-panel::-webkit-scrollbar {
+            display: none; /* Hide scrollbar for Chrome, Safari */
+        }
+
+        /* Section 3: Right Panel (Fixed) */
+        .right-panel {
+            border-left: 1px solid var(--primary-green);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow-y: auto; /* Allow scrolling if content overflows */
+            scrollbar-width: none;
+        }
+        .right-panel::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* --- Content Styling from User --- */
+        .features-card {
+            border: 1px solid var(--primary-green);
+            padding: 10px 20px 20px;
+            background: var(--glass-bg);
+        }
+        .features-card h2 {
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            margin-top: 0;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--primary-green);
+            padding-bottom: 10px;
+        }
+        .features-card ul { list-style-type: none; }
+        .features-card ul li { margin-bottom: 10px; font-size: 0.9rem; position: relative; padding-left: 15px; opacity: 0.8; line-height: 1.4; }
+        .features-card ul li::before { content: '>'; position: absolute; left: 0; color: var(--primary-green); }
+        .pricing { margin-top: 20px; font-size: 1.2rem; font-weight: bold; text-align: center; }
+        
+        .buy-button {
+            display: block;
+            background-color: transparent;
+            border: 1px solid var(--primary-green);
+            color: var(--primary-green);
+            font-family: var(--terminal-font);
+            transition: all 0.3s ease;
+            padding: 15px;
+            margin-top: 20px;
+            width: 100%;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-align: center;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .buy-button:hover {
+            background-color: var(--primary-green);
+            color: var(--dark-bg);
+            box-shadow: 0 0 10px var(--primary-green);
+        }
+
+        .gallery { margin-top: 20px; }
+        .gallery h2 { font-size: 1.2rem; text-transform: uppercase; margin-bottom: 15px; border-bottom: 1px solid var(--primary-green); padding-bottom: 10px; }
+        
+        .gallery-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+        .gallery-item {
+            border: 1px solid var(--primary-green);
+            background: var(--dark-bg);
+            padding: 5px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .gallery-item:hover {
+            box-shadow: var(--glow);
+            transform: translateY(-2px);
+        }
+        .gallery-img {
+            max-width: 100%;
+            display: block;
+        }
+
+        /* --- Lightbox Styles --- */
+        .lightbox-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .lightbox-content {
+            max-width: 90%;
+            max-height: 90%;
+            border: 2px solid var(--primary-green);
+            box-shadow: var(--glow);
+        }
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 40px;
+            font-size: 40px;
+            color: var(--primary-green);
+            cursor: pointer;
+            transition: 0.3s;
+            user-select: none;
+        }
+        .lightbox-close:hover {
+            transform: scale(1.2);
+            text-shadow: var(--glow);
+        }
+        .lightbox-prev, .lightbox-next {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 40px;
+            color: var(--primary-green);
+            cursor: pointer;
+            padding: 15px;
+            transition: 0.3s;
+            user-select: none;
+        }
+        .lightbox-prev:hover, .lightbox-next:hover {
+            background: var(--glass-bg);
+            text-shadow: var(--glow);
+        }
+        .lightbox-prev {
+            left: 20px;
+        }
+        .lightbox-next {
+            right: 20px;
+        }
+
+        /* --- Middle Panel Specific Content Styles --- */
+        .manual-container .glitch-header { font-size: 2rem; text-shadow: 2px 2px #ff00de, -2px -2px #00a1ff; margin-bottom: 20px; text-transform: uppercase; }
+        .manual-container h1, .manual-container h2 { border-bottom: 1px solid var(--primary-green); padding-bottom: 10px; margin-top: 20px; margin-bottom: 5px; text-transform: uppercase; }
+        .manual-container .content-block:first-child h1 { margin-top: 0; }
+        .manual-container h3 { margin-top: 25px; margin-bottom: 10px; text-transform: uppercase; }
+        .manual-container .sub-header { font-size: 1rem; opacity: 0.7; margin-bottom: 15px; }
+        .manual-container .terminal-text { font-size: 1rem; line-height: 1.6; margin-bottom: 1em; }
+        .manual-container .highlight { color: var(--dark-bg); background-color: var(--primary-green); padding: 2px 4px; font-weight: bold; }
+        .neon-divider { border: 0; height: 1px; background: var(--primary-green); box-shadow: var(--glow); margin: 25px 0; }
+        
+        .data-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 20px; }
+        .grid-item { border: 1px solid var(--primary-green); padding: 10px 15px 15px; background: var(--glass-bg); }
+        .grid-item h3 { margin-top: 0; margin-bottom: 10px; }
+        .grid-item .tag { background: var(--primary-green); color: var(--dark-bg); padding: 3px 8px; font-size: 0.8rem; font-weight: bold; display: inline-block; margin-bottom: 10px; }
+        
+        .matrix-list { list-style: none; margin-top: 15px; }
+        .matrix-list li { position: relative; padding-left: 20px; margin-bottom: 10px; line-height: 1.5; }
+        .matrix-list li::before { content: '>'; position: absolute; left: 0; }
+
+        .new-badge { font-size: 0.8rem; background: var(--primary-green); color: var(--dark-bg); padding: 2px 5px; border-radius: 3px; font-weight: bold; margin-left: 5px; }
+        .comparison-box { display: flex; gap: 20px; margin-top: 20px; }
+        .comparison-box > div { flex: 1; border: 1px solid var(--primary-green); padding: 15px; }
+        
+        .warning-box { border: 1px solid #ff4747; background: rgba(255, 71, 71, 0.1); padding: 15px; margin: 20px 0; }
+        .warning-box .clean-list li { list-style: none; margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+
+    <canvas id="matrix-canvas"></canvas>
+
+    <div class="main-container">
+        <div class="left-panel">
+            <a href="index.html" class="buy-button" style="margin-top: 0; margin-bottom: 20px;">&lt;-- BACK TO MAINFRAME</a>
+            <div class="features-card">
+                <h2>SYSTEM CAPABILITIES</h2>
+                <ul>
+                    <li>Core Logic: Goldbach Institutional Levels & PO3 Dealing Ranges.</li>
+                    <li>NEW Twin Tower Engine: Alternative structural mapping for high-trend environments.</li>
+                    <li>Gap Detection: Visualizes liquidity voids to identify fast-move zones.</li>
+                    <li>APP Projection: Advanced pairing algorithms for Continuation and Reversal setups.</li>
+                    <li>Order Flow Gates: Institutional confluence zones with independent sizing.</li>
+                    <li>Dynamic Scaling: Auto-scale bands based on ATR volatility.</li>
+                </ul>
+                <div class="pricing">$69.00 / Lifetime License</div>
+                <a href="https://gbstatxvanta.gumroad.com/l/StatXGBMirroring_v2" target="_blank" class="buy-button">[ BUY ]</a>
+            </div>
+        </div>
+        <div class="middle-panel">
+            <div class="manual-container">
+
+                <div class="content-block core-logic">
+                    <h1 class="glitch-header">StatX GB Mirroring v2.1</h1>
+                    <p class="terminal-text">
+                        <strong>STATXVANTA MXGB v2.1</strong> is not a standard technical indicator. It is a <span class="highlight">Structural Mapping Engine</span> designed to visualize the invisible grid systems used by institutional High-Frequency Trading (HFT) algorithms.
+                    </p>
+                    <p class="terminal-text">
+                        The market does not move randomly. It operates on a sequence of liquidity delivery vectors. By applying <strong>Goldbach Partition Theory</strong> and <strong>Power of Three (PO3)</strong> mechanics, MXGB separates retail noise from institutional intent.
+                    </p>
+                    <p class="terminal-text">
+                        <span class="highlight">WARNING:</span> This tool does not generate signals. It maps the terrain. You are the operator. You must identify the bias, anchor the grid, and execute the trade.
+                    </p>
+                </div>
+            
+                <hr class="neon-divider">
+            
+                <div class="content-block module-config">
+                    <h2>&gt;&gt;&gt; MODULE 1: GRID TOPOLOGY & PO3</h2>
+                    <p class="sub-header">DEFINING THE DEALING RANGE</p>
+            
+                    <p class="terminal-text">
+                        Every asset moves within a mathematical "Dealing Range" defined by the <strong>Power of Three (PO3)</strong>. You must calibrate the grid size to match the specific algorithm of your trading timeframe.
+                    </p>
+            
+                    <div class="data-grid">
+                        <div class="grid-item">
+                            <h3>[ PO3: 81 ]</h3>
+                            <span class="tag">SCALPING VECTOR</span>
+                            <p>Designed for micro-structure analysis on <strong>1-minute to 5-minute charts</strong>. Use this for high-precision entries inside larger zones.</p>
+                        </div>
+                        <div class="grid-item">
+                            <h3>[ PO3: 243 ]</h3>
+                            <span class="tag">INTRADAY VECTOR (DEFAULT)</span>
+                            <p>The standard "Day Trading" range. Optimized for <strong>5-minute to 15-minute charts</strong>. This captures the daily liquidity cycle most effectively.</p>
+                        </div>
+                        <div class="grid-item">
+                            <h3>[ PO3: 729 ]</h3>
+                            <span class="tag">SWING VECTOR</span>
+                            <p>Expanded range for <strong>1-Hour to 4-Hour charts</strong>. Filters out intraday noise to reveal major structural pivots.</p>
+                        </div>
+                        <div class="grid-item">
+                            <h3>[ PO3: 2187 ]</h3>
+                            <span class="tag">POSITION VECTOR</span>
+                            <p>Macro-structure analysis for <strong>4-Hour to Daily charts</strong>. Identifies multi-day or weekly delivery targets.</p>
+                        </div>
+                    </div>
+            
+                    <h3>&gt;&gt;&gt; SHIFT & EXTENSION PROTOCOLS</h3>
+                    <ul class="matrix-list">
+                        <li>
+                            <strong>Global Shift:</strong> Moves the entire Dealing Range grid up (+) or down (-) by full range increments. Use this when price expands cleanly beyond the current active range.
+                        </li>
+                        <li>
+                            <strong>Half-Shift (1/2):</strong> <span class="new-badge">NEW v2.1</span> Offsets the grid by exactly 0.5 Dealing Ranges. Critical for analyzing "Inter-Range" price delivery where algorithms are rebalancing between two major zones.
+                        </li>
+                        <li>
+                            <strong>Extended Range Display:</strong> You can now visualize up to <strong>±2 Dealing Ranges</strong> (DR +2, DR -2) to track volatility events without shifting the grid manually.
+                        </li>
+                    </ul>
+                </div>
+            
+                <hr class="neon-divider">
+            
+                <div class="content-block module-modes">
+                    <h2>&gt;&gt;&gt; MODULE 2: STRUCTURAL MAPPING ENGINES</h2>
+                    <p class="sub-header">ADAPTIVE ALGORITHMS</p>
+            
+                    <p class="terminal-text">
+                        Markets change states. MXGB v2.1 includes two distinct calculation engines to map these states. You cannot use both simultaneously; you must adapt to the current liquidity signature.
+                    </p>
+            
+                    <div class="comparison-box">
+                        <div class="left-col">
+                            <h3>[ MODE: GB ]</h3>
+                            <p class="mode-name">STANDARD GOLDBACH</p>
+                            <p>The classic partition system dividing the range into 15 distinct levels: <strong>0, 3, 11, 17, 29, 41, 47, 50...</strong></p>
+                            <p><strong>Use Case:</strong> Standard trending or ranging markets where price respects mathematical harmonics.</p>
+                        </div>
+                        <div class="right-col">
+                            <h3>[ MODE: TT ]</h3>
+                            <p class="mode-name">TWIN TOWER <span class="highlight">NEW</span></p>
+                            <p>An alternative structural map with broader zones: <strong>0, 14, 26, 40, 50, 60, 74, 86, 100%</strong>.</p>
+                            <p><strong>Use Case:</strong> High-velocity trends or "Expansion phases" where price slices through standard GB levels. If GB fails, switch to TT.</p>
+                        </div>
+                    </div>
+            
+                    <h3>&gt;&gt;&gt; AUXILIARY LEVELS</h3>
+                    <ul class="matrix-list">
+                        <li><strong>[ EQ ] Equilibrium:</strong> Shows only 0%, 50%, and 100%. Use for high-level bias checks.</li>
+                        <li><strong>[ CE ] Consequent Encroachment:</strong> The "Hidden" midpoints between Goldbach levels. Algorithms often use these for sniper entries inside a larger zone.</li>
+                        <li><strong>[ N-GB ] Non-Goldbach:</strong> Visualizes "Semi-Prime" levels (23, 35, 65, 77). Use these only when the market is ignoring standard primes.</li>
+                    </ul>
+                </div>
+            
+                <hr class="neon-divider">
+            
+                <div class="content-block module-ofg">
+                    <h2>&gt;&gt;&gt; MODULE 3: ORDER FLOW GATES (OFG)</h2>
+                    <p class="sub-header">INSTITUTIONAL CONFLUENCE ZONES</p>
+            
+                    <p class="terminal-text">
+                        The <strong>Order Flow Gate</strong> is a visual representation of institutional confluence. It highlights shaded regions where multiple Dealing Ranges overlap, creating a high-density zone of orders.
+                    </p>
+            
+                    <div class="warning-box">
+                        <strong>&gt;&gt;&gt; OFG DECODER RING:</strong>
+                        <ul class="clean-list">
+                            <li><span class="highlight">3% - 11%</span> :: <strong>Discount Order Block</strong> (High Probability Buys) </li>
+                            <li><span class="highlight">47% - 53%</span> :: <strong>Mitigation / Equilibrium</strong> (Decision Point) </li>
+                            <li><span class="highlight">89% - 97%</span> :: <strong>Premium Order Block</strong> (High Probability Sells) </li>
+                        </ul>
+                    </div>
+            
+                    <p class="terminal-text">
+                        <strong>v2.1 UPDATE - INDEPENDENT SIZING:</strong> You can now decouple the OFG size from the main PO3 grid. Set OFG Size to <strong>198 (Day)</strong> or <strong>486 (Swing)</strong> while keeping your chart grid on a scalping setting. This allows multi-timeframe analysis on a single chart.
+                    </p>
+                </div>
+            
+                <hr class="neon-divider">
+            
+                <div class="content-block module-projections">
+                    <h2>&gt;&gt;&gt; MODULE 4: PROJECTION VECTORS</h2>
+                    <p class="sub-header">PREDICTIVE DELIVERY MODELS</p>
+            
+                    <p class="terminal-text">
+                        This is the engine's primary output. By anchoring to a swing point, the system projects future delivery vectors.
+                    </p>
+            
+                    <h3>[ VECTOR B1: THE PRIMARY BAND ]</h3>
+                    <p>
+                        Calculates high-probability reaction zones based on the active Swing Anchor. When price approaches a Blue B1 Band, it is entering a calculated reversal or continuation node.
+                    </p>
+            
+                    <h3>[ VECTOR APP: ADVANCED PAIRING ] <span class="new-badge">v2.1</span></h3>
+                    <p>The new "APP" logic allows for complex projection pairing:</p>
+                    <ul class="matrix-list">
+                        <li><strong>APP (Equal):</strong> Pairs "Premium-to-Premium" or "Discount-to-Discount". Use this for <strong>Trend Continuation</strong> setups.</li>
+                        <li><strong>APP (Swap):</strong> Pairs "Premium-to-Discount". Use this for <strong>Trend Reversal</strong> setups.</li>
+                    </ul>
+            
+                    <h3>[ GAP MODE: VOID DETECTION ] <span class="new-badge">v2.1</span></h3>
+                    <p>
+                        <strong>Standard Mode</strong> shows where price <em>clusters</em>.
+                        <br><strong>Gap Mode</strong> inverts this to show <strong>Liquidity Voids</strong> (empty space).
+                        <br><em>STRATEGY:</em> Use Gap Mode to identify where price will move rapidly (expansion) and avoid these areas for entry. Trade the edges of the gaps.
+                    </p>
+                </div>
+            
+                <hr class="neon-divider">
+            
+                <div class="content-block module-execution">
+                    <h2>&gt;&gt;&gt; MODULE 5: EXECUTION PROTOCOLS</h2>
+                    <p class="sub-header">THE 3-PHASE SEQUENCE</p>
+            
+                    <p class="terminal-text">
+                        Discipline is the only edge. Follow the sequence. Do not deviate.
+                    </p>
+            
+                    <h3>PHASE 1: HIGHER TIMEFRAME ANCHORING</h3>
+                    <p>
+                        1. Identify HTF Bias (Daily/4H).<br>
+                        2. Locate a <strong>Swing Anchor</strong> (High/Low) that has recently purged liquidity (swept stops).<br>
+                        3. Input this price into the MXGB settings. Set <strong>Dir: Buy</strong> for Lows, <strong>Dir: Sell</strong> for Highs.
+                    </p>
+            
+                    <h3>PHASE 2: THE APPROACH</h3>
+                    <p>
+                        Wait for price to travel to the <strong>B1 Projection Band</strong>.
+                        <br><span class="highlight">CRITICAL:</span> Do not chase price. If it does not enter the band, there is no trade. Patience is a weapon.
+                    </p>
+            
+                    <h3>PHASE 3: ENTRY CONFIRMATION</h3>
+                    <p>
+                        Once price is inside the band, switch to a lower timeframe (5m/15m) and wait for the "Trinity" of confirmation:
+                    </p>
+                    <ul class="matrix-list">
+                        <li><strong>1. Liquidity Sweep:</strong> A distinct wick tapping the edge of the band (purging stops).</li>
+                        <li><strong>2. Fair Value Gap (FVG):</strong> A gap forming between candles, indicating institutional injection.</li>
+                        <li><strong>3. Displacement:</strong> A strong impulsive candle closing AWAY from the zone.</li>
+                    </ul>
+                    <p class="terminal-text">
+                        <strong>EXECUTION:</strong> Place entry limit order at the FVG or the CE of the B1 Band.
+                        <br><strong>STOP LOSS:</strong> 20-50 points beyond the band boundary.
+                    </p>
+                </div>
+            
+            </div>
+        </div>
+        <div class="right-panel">
+            <div class="gallery">
+                <h2>Execution Gallery</h2>
+                <div class="gallery-grid">
+                    <div class="gallery-item">
+                        <img src="https://www.tradingview.com/x/DJRWAQEg/" alt="Gallery Image 1" class="gallery-img">
+                    </div>
+                    <div class="gallery-item">
+                        <img src="https://www.tradingview.com/x/PfysFcra/" alt="Gallery Image 2" class="gallery-img">
+                    </div>
+                    <div class="gallery-item">
+                        <img src="https://www.tradingview.com/x/9OvJxcOS/" alt="Gallery Image 3" class="gallery-img">
+                    </div>
+                    <div class="gallery-item">
+                        <img src="https://www.tradingview.com/x/bqAw1Mzi/" alt="Gallery Image 4" class="gallery-img">
+                    </div>
+                    <div class="gallery-item">
+                        <img src="https://www.tradingview.com/x/i2bj3Atn/" alt="Gallery Image 5" class="gallery-img">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="lightbox-overlay" class="lightbox-overlay">
+        <span class="lightbox-close">&times;</span>
+        <span class="lightbox-prev">&lt;</span>
+        <span class="lightbox-next">&gt;</span>
+        <img class="lightbox-content" id="lightbox-image">
+    </div>
+
+    <script>
+        const canvas = document.getElementById('matrix-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        function setCanvasSize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            columns = canvas.width / fontSize;
+            for(let x = 0; x < columns; x++) drops[x] = 1; 
+        }
+        const alphabet = 'アァカサタナハマヤャラワガザダバパイィキシチニヒミリヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレゲゼデベペオォコソトノホモロヲゴゾドボポヴッンABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        const fontSize = 16;
+        let columns = canvas.width / fontSize;
+        const drops = [];
+        for(let x = 0; x < columns; x++) drops[x] = 1; 
+        function draw() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#00ff41';
+            ctx.font = fontSize + 'px monospace';
+            for(let i = 0; i < drops.length; i++)
+            {
+                const text = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
+                ctx.fillText(text, i*fontSize, drops[i]*fontSize);
+                if(drops[i]*fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            }
+        }
+        const drawInterval = setInterval(draw, 33);
+        window.addEventListener('resize', setCanvasSize);
+        setCanvasSize();
+
+        // --- Lightbox Logic ---
+        const galleryImages = document.querySelectorAll('.gallery-img');
+        const lightboxOverlay = document.getElementById('lightbox-overlay');
+        const lightboxImage = document.getElementById('lightbox-image');
+        const closeBtn = document.querySelector('.lightbox-close');
+        const prevBtn = document.querySelector('.lightbox-prev');
+        const nextBtn = document.querySelector('.lightbox-next');
+
+        let currentIndex = 0;
+        const imageUrls = Array.from(galleryImages).map(img => img.src);
+
+        function showLightbox(index) {
+            currentIndex = index;
+            lightboxImage.src = imageUrls[currentIndex];
+            lightboxOverlay.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function hideLightbox() {
+            lightboxOverlay.style.display = 'none';
+            document.body.style.overflow = 'hidden'; // Keep main page from scrolling
+        }
+
+        function showNextImage() {
+            currentIndex = (currentIndex + 1) % imageUrls.length;
+            lightboxImage.src = imageUrls[currentIndex];
+        }
+
+        function showPrevImage() {
+            currentIndex = (currentIndex - 1 + imageUrls.length) % imageUrls.length;
+            lightboxImage.src = imageUrls[currentIndex];
+        }
+
+        galleryImages.forEach((img, index) => {
+            img.addEventListener('click', () => {
+                showLightbox(index);
+            });
+        });
+
+        closeBtn.addEventListener('click', hideLightbox);
+        nextBtn.addEventListener('click', showNextImage);
+        prevBtn.addEventListener('click', showPrevImage);
+
+        document.addEventListener('keydown', (e) => {
+            if (lightboxOverlay.style.display === 'flex') {
+                if (e.key === 'Escape') {
+                    hideLightbox();
+                } else if (e.key === 'ArrowRight') {
+                    showNextImage();
+                } else if (e.key === 'ArrowLeft') {
+                    showPrevImage();
+                }
+            }
+        });
+
+    </script>
+</body>
+</html>

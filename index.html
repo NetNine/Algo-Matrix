@@ -39,7 +39,7 @@
             filter: blur(1.6px); /* Add blur to the background animation */
         }
 
-        /* --- NEW: 3-COLUMN LAYOUT GRID --- */
+        /* --- 3-COLUMN LAYOUT GRID --- */
         .body-grid {
             display: flex;
             width: 100vw;
@@ -47,7 +47,7 @@
             justify-content: space-between;
         }
 
-        /* --- NEW: SHARED SIDEBAR STYLES --- */
+        /* --- SHARED SIDEBAR STYLES --- */
         .sidebar-panel {
             width: 320px;
             padding: 20px;
@@ -56,8 +56,8 @@
             position: sticky;
             top: 0;
             flex-shrink: 0;
-            background: rgba(0, 0, 0, 0.2); /* Semi-transparent background to enable blur */
-            backdrop-filter: blur(2px); /* Add blur effect */
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(2px);
         }
 
         .sidebar-left {
@@ -79,6 +79,31 @@
             font-size: 1.2rem;
         }
         
+        /* --- SIDEBAR NAV --- */
+        .sidebar-nav {
+            display: flex;
+            gap: 10px; /* Creates space between the items */
+            margin-bottom: 20px;
+        }
+
+        .sidebar-nav-item {
+            flex: 1;
+            padding: 5px 10px; /* Reduced padding */
+            text-align: center;
+            color: var(--primary-green);
+            text-decoration: none;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+            border: 1px solid var(--primary-green); /* Individual borders */
+        }
+
+        .sidebar-nav-item:hover, .sidebar-nav-item.active {
+            background: var(--primary-green);
+            color: var(--dark-bg);
+            box-shadow: var(--glow);
+        }
+
         .indicator-menu-item {
             display: block;
             background: var(--dark-bg);
@@ -112,7 +137,7 @@
             font-size: 1.1rem;
         }
         
-        /* --- NEW: RIGHT SIDEBAR CONTENT --- */
+        /* --- RIGHT SIDEBAR CONTENT --- */
         .about-text, .creator-details {
             font-size: 0.9rem;
             opacity: 0.8;
@@ -140,7 +165,6 @@
             width: 30px;
             height: 30px;
         }
-
 
         /* --- MAIN CONTENT AREA --- */
         .main-content {
@@ -190,32 +214,20 @@
             text-transform: uppercase;
         }
 
-        /* --- ROADMAP SECTION --- */
-        .roadmap-item {
-            margin-bottom: 15px;
-            padding-left: 20px;
-            border-left: 2px solid var(--primary-green);
-        }
-
-        .roadmap-date {
-            font-weight: bold;
-            opacity: 0.7;
-        }
-
-        /* --- NEW ROADMAP STYLING --- */
+        /* --- ROADMAP STYLING --- */
         .roadmap-container {
             margin-top: 40px;
         }
         .roadmap-container h2 {
             text-align: center;
             text-shadow: var(--glow);
-            border-bottom: none; /* Override default h2 style */
+            border-bottom: none;
         }
         .roadmap-block {
             border: 1px solid var(--primary-green);
             padding: 20px;
             margin-bottom: 20px;
-            background: rgba(0, 255, 65, 0.05); /* Faint green glow */
+            background: rgba(0, 255, 65, 0.05);
         }
         .roadmap-block h3 {
             color: var(--primary-green);
@@ -243,12 +255,12 @@
         /* --- SCROLLBAR HIDING --- */
         body::-webkit-scrollbar,
         .sidebar-panel::-webkit-scrollbar {
-            display: none; /* For Chrome, Safari, and Opera */
+            display: none;
         }
 
         body, .sidebar-panel {
-            -ms-overflow-style: none;  /* For Internet Explorer and Edge */
-            scrollbar-width: none;  /* For Firefox */
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
         
         /* --- RESPONSIVE --- */
@@ -275,35 +287,39 @@
     <div class="body-grid">
         
         <nav class="sidebar-panel sidebar-left">
-            <h2>Paid Access</h2>
-
-            <a href="https://gbstatxvanta.gumroad.com/l/StatXGBMirroring_v2" target="_blank" class="indicator-menu-item">
-                <h3>StatX GB Mirroring v2</h3>
-                <p>Fractal projection engine. Uses historical price symmetry and Goldbach levels to forecast future delivery vectors.</p>
-                <div class="indicator-price">$69.00</div>
-            </a>
-            
-            <h2>Free Access</h2>
-
-            <a href="https://www.tradingview.com/script/i0HbK2ge-Goldbach-Twin-Tower-Levels-by-StatXvanta/" target="_blank" class="indicator-menu-item">
-                <h3>Goldbach + Twin Tower</h3>
-                <p>Institutional Grid System. Combines Goldbach mathematical levels with Twin Tower reversal arrays for precision entries.</p>
-            </a>
-            
-            <a href="https://www.tradingview.com/script/O5Cwn6CY-Order-Flow-Gates-By-StatXvanta/" target="_blank" class="indicator-menu-item">
-                <h3>Order Flow Gates</h3>
-                <p>Liquidity Barrier Detection. Defines the active trading range and validates bullish/bearish Order Flow transitions.</p>
-            </a>
-            
-            <a href="https://www.tradingview.com/script/WK1sKFXa-Twin-Tower-GB-Ranges-by-StatXvanta/" target="_blank" class="indicator-menu-item">
-                <h3>Twin Tower GB Ranges</h3>
-                <p>Reversal Probability Logic. Identifies overextended price action (Premium/Discount) using Twin Tower variance.</p>
-            </a>
-            
-            <a href="https://www.tradingview.com/script/9g07kGpH-SWING-DYNAMICS-AR-Projection/" target="_blank" class="indicator-menu-item">
-                <h3>Swing Dynamics AR</h3>
-                <p>Volatility Structure. Automates Swing High/Low mapping with Average Range (AR) projections for target setting.</p>
-            </a>
+            <div class="sidebar-nav">
+                <a class="sidebar-nav-item active" data-target="paid">Paid</a>
+                <a class="sidebar-nav-item" data-target="free">Free</a>
+            </div>
+        
+            <div id="paid-indicators" class="indicator-group">
+                <h2>Paid Access</h2>
+                <a href="indicator-details.html" target="_blank" class="indicator-menu-item">
+                    <h3>StatX GB Mirroring v2</h3>
+                    <p>Fractal projection engine. Uses historical price symmetry and Goldbach levels to forecast future delivery vectors.</p>
+                    <div class="indicator-price">$69.00</div>
+                </a>
+            </div>
+        
+            <div id="free-indicators" class="indicator-group" style="display: none;">
+                <h2>Free Access</h2>
+                <a href="https://www.tradingview.com/script/i0HbK2ge-Goldbach-Twin-Tower-Levels-by-StatXvanta/" target="_blank" class="indicator-menu-item">
+                    <h3>Goldbach + Twin Tower</h3>
+                    <p>Institutional Grid System. Combines Goldbach mathematical levels with Twin Tower reversal arrays for precision entries.</p>
+                </a>
+                <a href="https://www.tradingview.com/script/O5Cwn6CY-Order-Flow-Gates-By-StatXvanta/" target="_blank" class="indicator-menu-item">
+                    <h3>Order Flow Gates</h3>
+                    <p>Liquidity Barrier Detection. Defines the active trading range and validates bullish/bearish Order Flow transitions.</p>
+                </a>
+                <a href="https://www.tradingview.com/script/WK1sKFXa-Twin-Tower-GB-Ranges-by-StatXvanta/" target="_blank" class="indicator-menu-item">
+                    <h3>Twin Tower GB Ranges</h3>
+                    <p>Reversal Probability Logic. Identifies overextended price action (Premium/Discount) using Twin Tower variance.</p>
+                </a>
+                <a href="https://www.tradingview.com/script/9g07kGpH-SWING-DYNAMICS-AR-Projection/" target="_blank" class="indicator-menu-item">
+                    <h3>Swing Dynamics AR</h3>
+                    <p>Volatility Structure. Automates Swing High/Low mapping with Average Range (AR) projections for target setting.</p>
+                </a>
+            </div>
         </nav>
 
         <main class="main-content">
@@ -364,14 +380,10 @@
                     <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.317 4.36981C18.7915 3.59691 17.1477 3.00651 15.4018 2.59981C15.2403 2.87191 15.0525 3.19321 14.891 3.48861C13.0209 3.05921 11.0822 3.05921 9.21207 3.48861C9.05062 3.19321 8.86282 2.87191 8.70142 2.59981C6.95551 3.00651 5.31171 3.59691 3.78621 4.36981C1.63851 7.46321 0.979013 10.7417 1.25911 14.045C2.88581 15.4237 4.74931 16.3533 6.72621 16.9745C6.99991 16.6391 7.24741 16.2874 7.46861 15.923C6.44451 15.6152 5.50291 15.1488 4.64921 14.5422C4.77861 14.4443 4.90481 14.3432 5.02781 14.2388C8.59271 16.0313 12.4379 16.0313 15.9996 14.2388C16.1226 14.3432 16.2488 14.4443 16.3782 14.5422C15.5245 15.1488 14.5829 15.6152 13.5588 15.923C13.78 16.2874 14.0275 16.6391 14.3012 16.9745C16.2781 16.3533 18.1416 15.4237 19.7683 14.045C20.1231 10.4901 19.3331 7.31991 17.3998 4.88511C17.3998 4.88511 18.8853 4.54661 20.317 4.36981ZM10.0312 11.2378C9.32191 11.2378 8.74231 10.6092 8.74231 9.84371C8.74231 9.07831 9.31971 8.44971 10.0312 8.44971C10.7426 8.44971 11.3222 9.07831 11.3222 9.84371C11.3222 10.6092 10.7426 11.2378 10.0312 11.2378ZM14.0844 11.2378C13.3751 11.2378 12.7955 10.6092 12.7955 9.84371C12.7955 9.07831 13.3729 8.44971 14.0844 8.44971C14.7958 8.44971 15.3754 9.07831 15.3754 9.84371C15.3754 10.6092 14.7958 11.2378 14.0844 11.2378Z"/></svg>
                 </a>
                 <a href="https://www.youtube.com/@StatXvanta" title="YouTube">
-                    <svg fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M8.051 1.999h.089c.822.003 4.987.033 6.11.335a2.01 2.01 0 0 1 1.415 1.42c.101.38.172.883.22 1.402l.01.104.022.26.008.104c.065.914.073 1.77.074 1.957v.075c-.001.194-.01 1.108-.082 2.06l-.008.105-.022.26-.01.104c-.048.519-.119 1.023-.22 1.402a2.01 2.01 0 0 1-1.415 1.42c-1.16.312-5.569.334-6.18.335h-.142c-.309 0-1.587-.006-2.927-.052l-.17-.006-.087-.004-.171-.007-.171-.007c-1.11-.049-2.167-.128-2.654-.26a2.01 2.01 0 0 1-1.415-1.419c-.111-.417-.185-.986-.235-1.558L.09 9.82l-.008-.104A31 31 0 0 1 0 7.68v-.123c.002-.215.01-.958.064-1.778l.007-.103.003-.052.008-.104.022-.26.01-.104c.048-.519.119 1.023.22-1.402a2.01 2.01 0 0 1 1.415-1.42c.487-.13 1.544-.21 2.654-.26l.17-.007.172-.006.086-.003.171-.007A99 99 0 0 1 7.858 2zM6.4 5.209v5.582l4.157-2.79c-.002-.002.002-.002 0 0z"/>
-                    </svg>
+                    <svg fill="currentColor" viewBox="0 0 16 16"><path d="M8.051 1.999h.089c.822.003 4.987.033 6.11.335a2.01 2.01 0 0 1 1.415 1.42c.101.38.172.883.22 1.402l.01.104.022.26.008.104c.065.914.073 1.77.074 1.957v.075c-.001.194-.01 1.108-.082 2.06l-.008.105-.022.26-.01.104c-.048.519-.119 1.023-.22 1.402a2.01 2.01 0 0 1-1.415 1.42c-1.16.312-5.569.334-6.18.335h-.142c-.309 0-1.587-.006-2.927-.052l-.17-.006-.087-.004-.171-.007-.171-.007c-1.11-.049-2.167-.128-2.654-.26a2.01 2.01 0 0 1-1.415-1.419c-.111-.417-.185-.986-.235-1.558L.09 9.82l-.008-.104A31 31 0 0 1 0 7.68v-.123c.002-.215.01-.958.064-1.778l.007-.103.003-.052.008-.104.022-.26.01-.104c.048-.519.119 1.023.22-1.402a2.01 2.01 0 0 1 1.415-1.42c.487-.13 1.544-.21 2.654-.26l.17-.007.172-.006.086-.003.171-.007A99 99 0 0 1 7.858 2zM6.4 5.209v5.582l4.157-2.79c-.002-.002.002-.002 0 0z"/></svg>
                 </a>
                 <a href="https://x.com/GB_statXvanta" title="X (Twitter)">
-                    <svg fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M12.6.75h2.454l-5.36 6.142L16 15.25h-4.937l-3.867-5.07-4.425 5.07H.316l5.733-6.57L0 .75h5.063l3.495 4.633L12.6.75Zm-.86 13.028h1.36L4.323 2.145H2.865l8.875 11.633Z"/>
-                    </svg>
+                    <svg fill="currentColor" viewBox="0 0 16 16"><path d="M12.6.75h2.454l-5.36 6.142L16 15.25h-4.937l-3.867-5.07-4.425 5.07H.316l5.733-6.57L0 .75h5.063l3.495 4.633L12.6.75Zm-.86 13.028h1.36L4.323 2.145H2.865l8.875 11.633Z"/></svg>
                 </a>
             </div>
         </nav>
@@ -443,6 +455,39 @@
         // Resize canvas if window resizes
         window.addEventListener('resize', setCanvasSize);
         setCanvasSize(); // Initial set
+
+        // --- SIDEBAR TOGGLE SCRIPT ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const navItems = document.querySelectorAll('.sidebar-nav-item');
+            const paidIndicators = document.getElementById('paid-indicators');
+            const freeIndicators = document.getElementById('free-indicators');
+
+            if(paidIndicators && freeIndicators) {
+                // Initially show 'paid' and hide 'free'
+                paidIndicators.style.display = 'block';
+                freeIndicators.style.display = 'none';
+
+                navItems.forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const targetId = e.target.dataset.target;
+
+                        // Update active class on nav items
+                        navItems.forEach(nav => nav.classList.remove('active'));
+                        e.target.classList.add('active');
+
+                        // Show/hide indicator groups
+                        if (targetId === 'paid') {
+                            paidIndicators.style.display = 'block';
+                            freeIndicators.style.display = 'none';
+                        } else {
+                            paidIndicators.style.display = 'none';
+                            freeIndicators.style.display = 'block';
+                        }
+                    });
+                });
+            }
+        });
     </script>
 </body>
 </html>
